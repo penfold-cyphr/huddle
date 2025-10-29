@@ -12,36 +12,34 @@ import {
   X,
   Shield,
   Loader2,
-  BrainCircuit,
-  Target,
+  BrainCircuit, // Keeping BrainCircuit for general use
+  Target, // Using Target for AuthScreen
   Clock,
   Send,
   ChevronRight,
   AlertCircle,
-  Link // Added Link icon
+  Link
 } from 'lucide-react';
 
 // --- Gemini API Call ---
-// REMOVED API_KEY and API_URL constants - Handled by backend now
+// Handled by backend now
 
 /**
- * Calls OUR backend API endpoint to get AI insights for a debrief.
- * @param {string} text - The user's debrief text.
+ * Calls OUR backend API endpoint to get AI insights for a huddle.
+ * @param {string} text - The user's huddle text.
  * @returns {Promise<object>} - A promise that resolves to the structured insight object.
  */
 const getAiInsights = async (text) => {
   try {
-    // Point to our Vercel Serverless Function (or local dev equivalent)
-    const backendUrl = '/api/analyze'; // Relative URL works for same-origin requests
+    const backendUrl = '/api/analyze';
 
     const response = await fetch(backendUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: text }) // Send text in the request body
+      body: JSON.stringify({ text: text })
     });
 
     if (!response.ok) {
-       // Try to get more specific error from backend
         let errorData;
         try {
             errorData = await response.json();
@@ -52,7 +50,6 @@ const getAiInsights = async (text) => {
     }
 
     const result = await response.json();
-    // Assuming backend sends the parsed JSON directly
     if (result && result.emotions && result.themes && result.insight) {
        return result;
     } else {
@@ -62,7 +59,6 @@ const getAiInsights = async (text) => {
 
   } catch (error) {
     console.error("Error fetching insights from backend:", error);
-    // Return a structured error to be displayed in the UI
     return {
       emotions: ["Error"],
       themes: ["Analysis Unavailable"],
@@ -391,23 +387,22 @@ const GlobalStyles = () => {
 
 /**
  * 1. AuthScreen
- * Updated styles for monotone sans-serif
- * REMOVED the !API_KEY check for Demo Mode
+ * Updated icon and text for athlete/coach focus
  */
 const AuthScreen = ({ onUnlock, isAuthenticating }) => (
-  <div className="flex flex-col items-center justify-center min-h-screen bg-white text-black p-8 font-sans"> {/* Changed font */}
+  <div className="flex flex-col items-center justify-center min-h-screen bg-white text-black p-8 font-sans">
     <div className="max-w-md w-full text-center">
+      {/* Changed Icon */}
       <div className="w-16 h-16 bg-blue-600 mx-auto mb-16 rounded-full flex items-center justify-center">
-         <BrainCircuit size={32} className="text-white"/>
+         <Target size={32} className="text-white"/>
       </div>
-      <h1 className="text-4xl font-bold uppercase tracking-wider"> {/* Adjusted size */}
+      <h1 className="text-4xl font-bold uppercase tracking-wider">
         The Huddle
       </h1>
+      {/* Updated Subtext */}
       <p className="mt-4 text-lg font-normal text-gray-600">
-        Your Private Mindset Log
+        Your Private Log for Performance & Mindset
       </p>
-
-      {/* VERIFY: Removed Demo Mode Warning Block */}
 
        <div className="mt-12 text-gray-500 text-sm space-y-2">
            <p>✓ No Account Needed</p>
@@ -430,7 +425,7 @@ const AuthScreen = ({ onUnlock, isAuthenticating }) => (
         )}
       </button>
       <p className="mt-4 text-xs text-gray-500">
-        Microphone access required for voice debriefs.
+        Microphone access required for voice huddles.
       </p>
     </div>
   </div>
@@ -438,7 +433,7 @@ const AuthScreen = ({ onUnlock, isAuthenticating }) => (
 
 /**
  * 2. BottomNavBar
- * Updated styles for monotone sans-serif
+ * Renamed "Debrief" to "Huddle"
  */
 const BottomNavBar = ({ activePage, setPage, onShowPrivacy }) => {
   const NavItem = ({ icon, label, page }) => (
@@ -447,7 +442,6 @@ const BottomNavBar = ({ activePage, setPage, onShowPrivacy }) => {
       className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${activePage === page ? 'text-blue-600' : 'text-gray-500 hover:text-black'}`}
     >
       {React.cloneElement(icon, { size: 24, strokeWidth: activePage === page ? 2.5 : 2 })}
-      {/* Adjusted font-size and weight */}
       <span className="text-[11px] mt-1 font-semibold uppercase tracking-wide">{label}</span>
     </button>
   );
@@ -455,7 +449,7 @@ const BottomNavBar = ({ activePage, setPage, onShowPrivacy }) => {
   return (
     <footer className="fixed bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200 shadow-up">
       <div className="max-w-4xl mx-auto h-20 flex">
-        <NavItem icon={<Mic />} label="Debrief" page="debrief" />
+        <NavItem icon={<Mic />} label="Huddle" page="huddle" /> {/* Renamed */}
         <NavItem icon={<List />} label="History" page="history" />
         <NavItem icon={<Lightbulb />} label="Prompts" page="prompts" />
         <button
@@ -463,7 +457,6 @@ const BottomNavBar = ({ activePage, setPage, onShowPrivacy }) => {
           className="flex flex-col items-center justify-center flex-1 h-full transition-colors text-gray-500 hover:text-black"
         >
           <Shield size={24} strokeWidth={2} />
-           {/* Adjusted font-size and weight */}
           <span className="text-[11px] mt-1 font-semibold uppercase tracking-wide">Privacy</span>
         </button>
       </div>
@@ -472,10 +465,11 @@ const BottomNavBar = ({ activePage, setPage, onShowPrivacy }) => {
 };
 
 /**
- * 3. RecordingScreen
- * Updated styles for monotone sans-serif and mobile friendliness
+ * 3. RecordingScreen (Now HuddleScreen)
+ * Renamed component and labels
+ * Removed "Huddle Up" heading from idle view
  */
-const RecordingScreen = ({ selectedPrompt, setSelectedPrompt, onSave }) => {
+const HuddleScreen = ({ selectedPrompt, setSelectedPrompt, onSave }) => { // Renamed component
   const [view, setView] = useState('idle');
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [modalAudioUrl, setModalAudioUrl] = useState(null);
@@ -527,7 +521,8 @@ const RecordingScreen = ({ selectedPrompt, setSelectedPrompt, onSave }) => {
 
     const insights = await getAiInsights(transcription);
 
-    const newDebrief = {
+    // Renamed 'debrief' to 'huddle' in the saved object
+    const newHuddle = {
       id: Date.now(),
       date: new Date(),
       type: selectedPrompt ? 'Guided' : 'Vent',
@@ -538,7 +533,7 @@ const RecordingScreen = ({ selectedPrompt, setSelectedPrompt, onSave }) => {
       ...insights
     };
 
-    onSave(newDebrief);
+    onSave(newHuddle); // Pass the new huddle object
     handleDiscard(); // Reset after successful save
   };
 
@@ -546,33 +541,26 @@ const RecordingScreen = ({ selectedPrompt, setSelectedPrompt, onSave }) => {
     switch (view) {
       case 'recording':
         return (
-          // Use min-h-full for flex parent
           <div className="min-h-full flex flex-col items-center justify-between">
-            {/* Top section (Timer and Status) */}
-             <div className="w-full text-center pt-8"> {/* Ensure top padding */}
-              <div className="flex items-center justify-center gap-3 text-red-600 mb-6 md:mb-12"> {/* Reduced margin */}
+             <div className="w-full text-center pt-8">
+              <div className="flex items-center justify-center gap-3 text-red-600 mb-6 md:mb-12">
                 <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
                 <span className="text-sm font-semibold uppercase tracking-wider">
                   {isListening ? 'Listening...' : 'Recording Audio'}
                 </span>
               </div>
-              {/* Responsive Timer */}
               <h1 className="text-7xl md:text-9xl text-black font-bold tabular-nums leading-none mb-6 md:mb-12 max-w-2xl mx-auto">
                 {formatTime(elapsedTime)}
               </h1>
             </div>
-
-            {/* Middle Section (Transcript Preview) - Allow flex grow */}
-             <div className="w-full max-w-2xl mx-auto flex-grow overflow-y-auto bg-white p-4 md:p-6 border border-gray-200 rounded-lg shadow-sm mb-6 md:mb-8 max-h-[40vh] md:max-h-[30vh]"> {/* Use flex-grow, add max-height */}
+             <div className="w-full max-w-2xl mx-auto flex-grow overflow-y-auto bg-white p-4 md:p-6 border border-gray-200 rounded-lg shadow-sm mb-6 md:mb-8 max-h-[40vh] md:max-h-[30vh]">
               {transcript ? (
                 <p className="text-base md:text-lg leading-relaxed">{transcript}</p>
               ) : (
                 <p className="text-base md:text-lg text-gray-400 italic">Start speaking to transcribe...</p>
               )}
             </div>
-
-            {/* Bottom Section (Stop Button) */}
-            <div className="pb-8 flex-shrink-0"> {/* Ensure bottom padding */}
+            <div className="pb-8 flex-shrink-0">
               <button
                 onClick={handleStop}
                 className="w-20 h-20 md:w-24 md:h-24 bg-black flex items-center justify-center hover:bg-gray-800 transition-colors rounded-full"
@@ -595,11 +583,9 @@ const RecordingScreen = ({ selectedPrompt, setSelectedPrompt, onSave }) => {
         return (
           // Use min-h-full for flex parent
           <div className="min-h-full flex flex-col">
-            <h2 className="text-4xl md:text-5xl font-bold text-black uppercase tracking-wider pt-8 flex-shrink-0"> {/* Keep header at top */}
-              Debrief
-            </h2>
+            {/* REMOVED Huddle Up Heading */}
              {/* Use flex-grow for centering content */}
-            <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
+            <div className="flex-1 flex flex-col items-center justify-center text-center px-4 pt-16"> {/* Added top padding */}
               {selectedPrompt ? (
                 <div className="max-w-xl w-full mb-8 md:mb-12 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                   <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-4">Guided Prompt</p>
@@ -614,8 +600,8 @@ const RecordingScreen = ({ selectedPrompt, setSelectedPrompt, onSave }) => {
                   </button>
                 </div>
               ) : (
-                <p className="text-xl md:text-3xl font-medium text-black mb-8 md:mb-12"> {/* Adjusted size/margin */}
-                  Ready to record your thoughts?
+                <p className="text-xl md:text-3xl font-medium text-black mb-8 md:mb-12">
+                  Ready to start your huddle?
                 </p>
               )}
               <button
@@ -624,7 +610,7 @@ const RecordingScreen = ({ selectedPrompt, setSelectedPrompt, onSave }) => {
               >
                 <Mic size={48} md:size={56} className="text-white" strokeWidth={2} />
               </button>
-              <p className="text-sm text-gray-500 mt-8 uppercase tracking-wider">Tap to Record Your Debrief</p>
+              <p className="text-sm text-gray-500 mt-8 uppercase tracking-wider">Tap to Record Your Huddle</p>
             </div>
           </div>
         );
@@ -650,7 +636,7 @@ const RecordingScreen = ({ selectedPrompt, setSelectedPrompt, onSave }) => {
 
 /**
  * 4. AnalysisModal
- * Updated styles for monotone sans-serif and mobile friendliness
+ * Updated styles and labels
  */
 const AnalysisModal = ({ audioUrl, duration, initialTranscript, onClose, onSubmit }) => {
   const [transcription, setTranscription] = useState(initialTranscript);
@@ -698,48 +684,48 @@ const AnalysisModal = ({ audioUrl, duration, initialTranscript, onClose, onSubmi
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-white font-sans text-black overflow-y-auto">
       {/* Header */}
-      <div className="flex-shrink-0 p-4 md:p-8 border-b border-gray-200"> {/* Reduced mobile padding */}
+      <div className="flex-shrink-0 p-4 md:p-8 border-b border-gray-200">
         <div className="flex justify-between items-start">
-          <h2 className="text-2xl md:text-4xl font-bold uppercase tracking-wider"> {/* Reduced mobile size */}
-            Review
+          <h2 className="text-2xl md:text-4xl font-bold uppercase tracking-wider">
+            Review Huddle {/* Renamed */}
           </h2>
           <button
             onClick={onClose}
             className="p-2 -mr-2 hover:bg-gray-100 transition-colors rounded-full"
           >
-            <X size={24} md:size={32} strokeWidth={2} /> {/* Reduced mobile size */}
+            <X size={24} md:size={32} strokeWidth={2} />
           </button>
         </div>
       </div>
 
        {/* Body */}
-      <div className="flex-grow p-4 md:p-8 flex flex-col"> {/* Reduced mobile padding */}
-        <p className="text-base text-gray-600 mb-4 md:mb-8"> {/* Adjusted size/margin */}
+      <div className="flex-grow p-4 md:p-8 flex flex-col">
+        <p className="text-base text-gray-600 mb-4 md:mb-8">
           Review your transcription. Edit below if needed.
         </p>
 
         {audioUrl && (
-          <div className="mb-4 md:mb-8"> {/* Adjusted margin */}
-            <h3 className="text-xs font-bold uppercase tracking-wider mb-2 md:mb-4 text-gray-500">Audio Log</h3> {/* Adjusted margin */}
-             <div className="flex items-center gap-3 md:gap-4 p-3 md:p-6 bg-gray-100 rounded"> {/* Reduced padding/gap */}
+          <div className="mb-4 md:mb-8">
+            <h3 className="text-xs font-bold uppercase tracking-wider mb-2 md:mb-4 text-gray-500">Audio Log</h3>
+             <div className="flex items-center gap-3 md:gap-4 p-3 md:p-6 bg-gray-100 rounded">
               <audio ref={audioRef} src={audioUrl} className="hidden" preload="metadata" />
               <button
                 onClick={togglePlay}
-                className="flex-shrink-0 w-10 h-10 md:w-16 md:h-16 flex items-center justify-center bg-black text-white rounded-full hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2" /* Adjusted size */
+                className="flex-shrink-0 w-10 h-10 md:w-16 md:h-16 flex items-center justify-center bg-black text-white rounded-full hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
               >
-                {isPlaying ? <Pause size={18} md:size={24} fill="white" stroke="white" /> : <Play size={18} md:size={24} fill="white" stroke="white" />} {/* Adjusted icon size */}
+                {isPlaying ? <Pause size={18} md:size={24} fill="white" stroke="white" /> : <Play size={18} md:size={24} fill="white" stroke="white" />}
               </button>
               <div className="flex-grow">
-                <p className="font-semibold text-sm">Recorded Debrief</p> {/* Adjusted size */}
-                <p className="text-xs text-gray-600 uppercase tracking-wider">{formatTime(duration)}</p> {/* Adjusted size */}
+                <p className="font-semibold text-sm">Recorded Huddle</p> {/* Renamed */}
+                <p className="text-xs text-gray-600 uppercase tracking-wider">{formatTime(duration)}</p>
               </div>
             </div>
           </div>
         )}
 
         <textarea
-          rows={10} /* Reduced default rows */
-          className="w-full p-3 md:p-6 bg-gray-50 border border-gray-300 rounded text-base leading-relaxed focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 resize-none flex-grow mb-4 md:mb-8" /* Adjusted padding/margin */
+          rows={10}
+          className="w-full p-3 md:p-6 bg-gray-50 border border-gray-300 rounded text-base leading-relaxed focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 resize-none flex-grow mb-4 md:mb-8"
           placeholder="Your transcription appears here..."
           value={transcription}
           onChange={(e) => setTranscription(e.target.value)}
@@ -751,17 +737,17 @@ const AnalysisModal = ({ audioUrl, duration, initialTranscript, onClose, onSubmi
           <button
             onClick={handleSubmit}
             disabled={isAnalyzing}
-            className="w-full bg-blue-600 text-white px-6 md:px-12 py-3 md:py-4 text-base font-bold uppercase tracking-wider hover:bg-blue-700 disabled:bg-gray-400 transition-colors flex items-center justify-center gap-3 rounded" /* Adjusted padding/text size */
+            className="w-full bg-blue-600 text-white px-6 md:px-12 py-3 md:py-4 text-base font-bold uppercase tracking-wider hover:bg-blue-700 disabled:bg-gray-400 transition-colors flex items-center justify-center gap-3 rounded"
           >
             {isAnalyzing ? (
               <>
-                <Loader2 size={20} className="animate-spin" /> {/* Adjusted size */}
+                <Loader2 size={20} className="animate-spin" />
                 Analyzing...
               </>
             ) : (
               <>
-                <Send size={20} /> {/* Adjusted size */}
-                Analyze Debrief
+                <Send size={20} />
+                Analyze Huddle {/* Renamed */}
               </>
             )}
           </button>
@@ -773,7 +759,7 @@ const AnalysisModal = ({ audioUrl, duration, initialTranscript, onClose, onSubmi
 
 /**
  * 5. PromptsScreen
- * Updated styles for monotone sans-serif
+ * No changes needed for renaming
  */
 const PromptsScreen = ({ setSelectedPrompt, setPage }) => {
 
@@ -807,7 +793,7 @@ const PromptsScreen = ({ setSelectedPrompt, setPage }) => {
 
   const handleSelect = (prompt) => {
     setSelectedPrompt(prompt);
-    setPage('debrief');
+    setPage('huddle'); // Go to huddle screen after selecting prompt
   };
 
   const PromptList = ({ title, prompts }) => (
@@ -845,22 +831,22 @@ const PromptsScreen = ({ setSelectedPrompt, setPage }) => {
 
 /**
  * 6. HistoryScreen
- * Updated styles for monotone sans-serif
+ * Renamed labels, HuddleCard
  */
-const HistoryScreen = ({ debriefs }) => {
-  const [selectedDebrief, setSelectedDebrief] = useState(null);
+const HistoryScreen = ({ huddles }) => { // Renamed prop
+  const [selectedHuddle, setSelectedHuddle] = useState(null); // Renamed state
 
-  const { totalDebriefs, commonEmotions, commonThemes } = useMemo(() => {
+  const { totalHuddles, commonEmotions, commonThemes } = useMemo(() => { // Renamed variable
     const emotionCounts = {};
     const themeCounts = {};
 
-    debriefs.forEach(debrief => {
-      debrief.emotions?.forEach(e => {
+    huddles.forEach(huddle => { // Use huddle
+      huddle.emotions?.forEach(e => {
         if(e && typeof e === 'string') {
            emotionCounts[e] = (emotionCounts[e] || 0) + 1;
         }
       });
-      debrief.themes?.forEach(t => {
+      huddle.themes?.forEach(t => {
          if(t && typeof t === 'string') {
             themeCounts[t] = (themeCounts[t] || 0) + 1;
          }
@@ -873,17 +859,17 @@ const HistoryScreen = ({ debriefs }) => {
       .map(([name]) => name);
 
     return {
-      totalDebriefs: debriefs.length,
+      totalHuddles: huddles.length, // Renamed
       commonEmotions: getTopItems(emotionCounts),
       commonThemes: getTopItems(themeCounts),
     };
-  }, [debriefs]);
+  }, [huddles]); // Depend on huddles
 
-  const sortedDebriefs = useMemo(() => {
-    return [...debriefs]
+  const sortedHuddles = useMemo(() => { // Renamed
+    return [...huddles] // Use huddles
         .filter(d => d.date instanceof Date && !isNaN(d.date))
         .sort((a, b) => b.date.getTime() - a.date.getTime());
-  }, [debriefs]);
+  }, [huddles]); // Depend on huddles
 
   return (
     // Padding now applied by parent
@@ -893,53 +879,54 @@ const HistoryScreen = ({ debriefs }) => {
       </h2>
 
       {/* Stats Section - Updated grid for mobile */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 md:mb-16 rounded overflow-hidden"> {/* Use gap-4 */}
-        <div className="bg-black text-white p-6 md:p-8 rounded"> {/* Added rounding */}
-          <p className="text-xs font-semibold uppercase tracking-wider mb-2 md:mb-4 opacity-70">Total Debriefs</p> {/* font-bold to semibold */}
-          <p className="text-5xl md:text-6xl font-bold">{totalDebriefs}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 md:mb-16 rounded overflow-hidden">
+        <div className="bg-black text-white p-6 md:p-8 rounded">
+          <p className="text-xs font-semibold uppercase tracking-wider mb-2 md:mb-4 opacity-70">Total Huddles</p> {/* Renamed */}
+          <p className="text-5xl md:text-6xl font-bold">{totalHuddles}</p> {/* Renamed */}
         </div>
-        <div className="bg-gray-100 p-6 md:p-8 rounded"> {/* Added rounding */}
-          <p className="text-xs font-semibold uppercase tracking-wider mb-2 md:mb-4 text-gray-500">Top Emotion</p> {/* font-bold to semibold */}
+        <div className="bg-gray-100 p-6 md:p-8 rounded">
+          <p className="text-xs font-semibold uppercase tracking-wider mb-2 md:mb-4 text-gray-500">Top Emotion</p>
           <p className="text-lg md:text-xl font-bold text-black truncate">{commonEmotions.length ? commonEmotions[0] : '--'}</p>
         </div>
-        <div className="bg-gray-100 p-6 md:p-8 rounded"> {/* Added rounding */}
-          <p className="text-xs font-semibold uppercase tracking-wider mb-2 md:mb-4 text-gray-500">Top Theme</p> {/* font-bold to semibold */}
+        <div className="bg-gray-100 p-6 md:p-8 rounded">
+          <p className="text-xs font-semibold uppercase tracking-wider mb-2 md:mb-4 text-gray-500">Top Theme</p>
           <p className="text-lg md:text-xl font-bold text-black truncate">{commonThemes.length ? commonThemes[0] : '--'}</p>
         </div>
       </div>
 
-      {/* Debrief History List */}
-      <div className="space-y-2 bg-white rounded shadow-sm border border-gray-200 overflow-hidden"> {/* Group items in card */}
-        {sortedDebriefs.length === 0 ? (
-          <div className="py-24 md:py-32 text-center bg-white rounded"> {/* Ensure bg for empty state */}
+      {/* Huddle History List */}
+      <div className="space-y-2 bg-white rounded shadow-sm border border-gray-200 overflow-hidden">
+        {sortedHuddles.length === 0 ? ( // Use renamed variable
+          <div className="py-24 md:py-32 text-center bg-white rounded">
             <FileText size={48} className="text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg md:text-xl">Your saved debriefs will appear here.</p>
+            <p className="text-gray-500 text-lg md:text-xl">Your saved huddles will appear here.</p> {/* Renamed */}
           </div>
         ) : (
-          sortedDebriefs.map(debrief => (
-            <DebriefCard
-              key={debrief.id}
-              debrief={debrief}
-              onClick={() => setSelectedDebrief(debrief)}
+          sortedHuddles.map(huddle => ( // Use renamed variable
+            <HuddleCard // Renamed component
+              key={huddle.id}
+              huddle={huddle} // Pass huddle prop
+              onClick={() => setSelectedHuddle(huddle)} // Use renamed state setter
             />
           ))
         )}
       </div>
 
-      {selectedDebrief && (
+      {selectedHuddle && ( // Use renamed state
         <InsightModal
-          debrief={selectedDebrief}
-          onClose={() => setSelectedDebrief(null)}
+          huddle={selectedHuddle} // Pass huddle prop
+          onClose={() => setSelectedHuddle(null)} // Use renamed state setter
         />
       )}
     </div>
   );
 };
 
-const DebriefCard = ({ debrief, onClick }) => {
-  const firstLine = typeof debrief.content === 'string' ? debrief.content.split('\n')[0] : "No transcription available";
-  const displayDate = debrief.date instanceof Date && !isNaN(debrief.date)
-      ? debrief.date.toLocaleDateString()
+// Renamed DebriefCard to HuddleCard
+const HuddleCard = ({ huddle, onClick }) => { // Renamed props
+  const firstLine = typeof huddle.content === 'string' ? huddle.content.split('\n')[0] : "No transcription available";
+  const displayDate = huddle.date instanceof Date && !isNaN(huddle.date)
+      ? huddle.date.toLocaleDateString()
       : 'Invalid Date';
 
   return (
@@ -948,26 +935,26 @@ const DebriefCard = ({ debrief, onClick }) => {
       className="w-full text-left p-4 md:p-6 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors group flex justify-between items-center"
     >
         <div className="flex-grow pr-4 overflow-hidden">
-          <span className="text-xs md:text-sm font-bold text-blue-600 uppercase tracking-wider"> {/* Use blue for type */}
-            {debrief.type === 'Guided' ? 'Guided Debrief' : 'Free Vent'}
+          <span className="text-xs md:text-sm font-bold text-blue-600 uppercase tracking-wider">
+            {huddle.type === 'Guided' ? 'Guided Huddle' : 'Free Vent'} {/* Renamed */}
           </span>
           <p className="text-base md:text-lg font-medium text-black truncate my-2">
             {firstLine}
           </p>
-           {debrief.type === 'Guided' && debrief.prompt && (
+           {huddle.type === 'Guided' && huddle.prompt && ( // Check huddle prop
                 <p className="text-xs md:text-sm italic text-gray-500 mb-3 truncate">
-                Prompt: {debrief.prompt}
+                Prompt: {huddle.prompt}
                 </p>
             )}
           <div className="flex items-center gap-3 md:gap-4 text-gray-500 text-[10px] md:text-xs uppercase tracking-wider mb-3">
             <span>{displayDate}</span>
-            <span>{formatTime(debrief.duration || 0)}</span>
-            {debrief.audioUrl && <span className="text-black font-semibold">● Audio</span>}
+            <span>{formatTime(huddle.duration || 0)}</span>
+            {huddle.audioUrl && <span className="text-black font-semibold">● Audio</span>}
           </div>
           <div className="flex flex-wrap gap-1 md:gap-2">
-            {debrief.emotions?.slice(0, 3).map((e, i) => (
+            {huddle.emotions?.slice(0, 3).map((e, i) => ( // Use huddle prop
                e && typeof e === 'string' &&
-              <span key={i} className="px-2 py-0.5 md:px-3 md:py-1 bg-gray-200 text-gray-800 text-[10px] md:text-xs font-medium uppercase tracking-wide rounded-full"> {/* Use gray tags */}
+              <span key={i} className="px-2 py-0.5 md:px-3 md:py-1 bg-gray-200 text-gray-800 text-[10px] md:text-xs font-medium uppercase tracking-wide rounded-full">
                 {e}
               </span>
             ))}
@@ -982,9 +969,9 @@ const DebriefCard = ({ debrief, onClick }) => {
 
 /**
  * 7. InsightModal
- * Updated styles for monotone sans-serif
+ * Renamed labels, props
  */
-const InsightModal = ({ debrief, onClose }) => {
+const InsightModal = ({ huddle, onClose }) => { // Renamed prop
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(null);
 
@@ -1009,20 +996,20 @@ const InsightModal = ({ debrief, onClose }) => {
     return () => { if (audio) { audio.removeEventListener('play', handlePlay); audio.removeEventListener('pause', handlePause); audio.removeEventListener('ended', handleEnded); } };
   }, [audioRef]);
 
-  const displayDate = debrief.date instanceof Date && !isNaN(debrief.date)
-        ? debrief.date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+  const displayDate = huddle.date instanceof Date && !isNaN(huddle.date) // Use huddle prop
+        ? huddle.date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
         : 'Invalid Date';
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-white font-sans text-black overflow-y-auto"> {/* Changed font */}
+    <div className="fixed inset-0 z-50 flex flex-col bg-white font-sans text-black overflow-y-auto">
       {/* Header */}
       <div className="flex-shrink-0 p-6 md:p-8 border-b border-gray-200">
         <div className="flex justify-between items-start">
            <div>
                <h2 className="text-3xl md:text-4xl font-bold uppercase tracking-wider mb-1">
-                {debrief.type === 'Guided' ? 'Guided Insight' : 'Insight'}
+                {huddle.type === 'Guided' ? 'Guided Insight' : 'Insight'} {/* Use huddle prop */}
                </h2>
-               <p className="text-sm text-gray-500">{displayDate} - {formatTime(debrief.duration || 0)}</p>
+               <p className="text-sm text-gray-500">{displayDate} - {formatTime(huddle.duration || 0)}</p> {/* Use huddle prop */}
            </div>
           <button onClick={onClose} className="p-2 -mr-2 md:p-2 hover:bg-gray-100 transition-colors rounded-full">
             <X size={28} md:size={32} strokeWidth={2} />
@@ -1033,21 +1020,21 @@ const InsightModal = ({ debrief, onClose }) => {
        {/* Body */}
       <div className="flex-grow p-6 md:p-8">
         {/* AI Insight */}
-        <div className="bg-blue-600 text-white p-8 md:p-12 mb-8 md:mb-12 rounded"> {/* Blue accent for insight */}
-          <h3 className="text-xs font-semibold uppercase tracking-wider mb-4 md:mb-6 opacity-80"> {/* font-bold to semibold */}
+        <div className="bg-blue-600 text-white p-8 md:p-12 mb-8 md:mb-12 rounded">
+          <h3 className="text-xs font-semibold uppercase tracking-wider mb-4 md:mb-6 opacity-80">
             AI Analysis
           </h3>
           <p className="text-xl md:text-2xl font-normal leading-relaxed">
-            {debrief.insight || "No insight available."}
+            {huddle.insight || "No insight available."} {/* Use huddle prop */}
           </p>
         </div>
 
         {/* Audio Player */}
-        {debrief.audioUrl && (
+        {huddle.audioUrl && ( // Use huddle prop
           <div className="mb-8 md:mb-12">
-            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 md:mb-4 text-gray-500">Audio Log</h3> {/* font-bold to semibold */}
+            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 md:mb-4 text-gray-500">Audio Log</h3>
             <div className="flex items-center gap-4 p-4 md:p-6 bg-gray-100 rounded">
-              <audio ref={audioRef} src={debrief.audioUrl} className="hidden" preload="metadata" />
+              <audio ref={audioRef} src={huddle.audioUrl} className="hidden" preload="metadata" /> {/* Use huddle prop */}
               <button
                 onClick={togglePlay}
                 className="flex-shrink-0 w-12 h-12 md:w-16 md:h-16 flex items-center justify-center bg-black text-white rounded-full hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
@@ -1055,8 +1042,8 @@ const InsightModal = ({ debrief, onClose }) => {
                 {isPlaying ? <Pause size={20} md:size={24} fill="white" stroke="white" /> : <Play size={20} md:size={24} fill="white" stroke="white" />}
               </button>
               <div className="flex-grow">
-                <p className="font-semibold text-sm md:text-base">Recorded Debrief</p> {/* font-medium to semibold */}
-                <p className="text-xs md:text-sm text-gray-600 uppercase tracking-wider">{formatTime(debrief.duration || 0)}</p>
+                <p className="font-semibold text-sm md:text-base">Recorded Huddle</p> {/* Renamed */}
+                <p className="text-xs md:text-sm text-gray-600 uppercase tracking-wider">{formatTime(huddle.duration || 0)}</p> {/* Use huddle prop */}
               </div>
             </div>
           </div>
@@ -1065,9 +1052,9 @@ const InsightModal = ({ debrief, onClose }) => {
         {/* Emotions & Themes */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-12">
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 md:mb-4 text-gray-500">Emotions</h3> {/* font-bold to semibold */}
+            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 md:mb-4 text-gray-500">Emotions</h3>
             <div className="flex flex-wrap gap-2">
-              {(debrief.emotions && debrief.emotions.length > 0) ? debrief.emotions.map((e, i) => (
+              {(huddle.emotions && huddle.emotions.length > 0) ? huddle.emotions.map((e, i) => ( // Use huddle prop
                  e && typeof e === 'string' &&
                 <span key={i} className="px-3 py-1 md:px-4 md:py-2 bg-gray-200 text-gray-800 text-xs md:text-sm font-medium uppercase tracking-wide rounded-full">
                   {e}
@@ -1076,9 +1063,9 @@ const InsightModal = ({ debrief, onClose }) => {
             </div>
           </div>
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 md:mb-4 text-gray-500">Themes</h3> {/* font-bold to semibold */}
+            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 md:mb-4 text-gray-500">Themes</h3>
             <div className="flex flex-wrap gap-2">
-               {(debrief.themes && debrief.themes.length > 0) ? debrief.themes.map((t, i) => (
+               {(huddle.themes && huddle.themes.length > 0) ? huddle.themes.map((t, i) => ( // Use huddle prop
                  t && typeof t === 'string' &&
                 <span key={i} className="px-3 py-1 md:px-4 md:py-2 bg-gray-200 text-gray-800 text-xs md:text-sm font-medium uppercase tracking-wide rounded-full">
                   {t}
@@ -1090,10 +1077,10 @@ const InsightModal = ({ debrief, onClose }) => {
 
         {/* Full Transcription */}
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 md:mb-4 text-gray-500">Transcription</h3> {/* font-bold to semibold */}
+          <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 md:mb-4 text-gray-500">Transcription</h3>
           <div className="max-h-64 overflow-y-auto p-4 md:p-6 bg-gray-50 border-l-4 border-black rounded-r">
             <p className="text-base md:text-lg leading-relaxed whitespace-pre-wrap">
-                {debrief.content || <span className="italic text-gray-500">No transcription available.</span>}
+                {huddle.content || <span className="italic text-gray-500">No transcription available.</span>} {/* Use huddle prop */}
             </p>
           </div>
         </div>
@@ -1104,10 +1091,10 @@ const InsightModal = ({ debrief, onClose }) => {
 
 /**
  * 8. PrivacyModal
- * Updated styles for monotone sans-serif
+ * No changes needed for renaming
  */
 const PrivacyModal = ({ onClose }) => (
-  <div className="fixed inset-0 z-50 flex flex-col bg-white font-sans text-black overflow-y-auto"> {/* Changed font */}
+  <div className="fixed inset-0 z-50 flex flex-col bg-white font-sans text-black overflow-y-auto">
      {/* Header */}
     <div className="flex-shrink-0 p-6 md:p-8 border-b border-gray-200">
       <div className="flex justify-between items-start">
@@ -1126,44 +1113,39 @@ const PrivacyModal = ({ onClose }) => (
         Your privacy is the foundation. Period.
       </p>
 
-      <div className="space-y-5 md:space-y-6 text-gray-700"> {/* Default text gray */}
+      <div className="space-y-5 md:space-y-6 text-gray-700">
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider mb-2 md:mb-3 text-black">Device-Only Storage</h3> {/* font-bold to semibold */}
+          <h3 className="text-sm font-semibold uppercase tracking-wider mb-2 md:mb-3 text-black">Device-Only Storage</h3>
           <p>
             Your audio recordings and transcriptions <strong className="text-black font-semibold">stay on your device</strong>. They are never uploaded to our servers unless you explicitly choose a future backup option (which will also be encrypted).
           </p>
         </div>
-
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider mb-2 md:mb-3 text-black">No Personal Info Collected</h3> {/* font-bold to semibold */}
+          <h3 className="text-sm font-semibold uppercase tracking-wider mb-2 md:mb-3 text-black">No Personal Info Collected</h3>
           <p>
              We <strong className="text-black font-semibold">do not ask for or store your name, email, phone number, or any other personally identifiable information (PII).</strong> Your usage is anonymous.
           </p>
         </div>
-
          <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider mb-2 md:mb-3 text-black">Strong Encryption</h3> {/* font-bold to semibold */}
+          <h3 className="text-sm font-semibold uppercase tracking-wider mb-2 md:mb-3 text-black">Strong Encryption</h3>
           <p>
              Data is encrypted <strong className="text-black font-semibold">at rest (AES-256)</strong> and <strong className="text-black font-semibold">in transit (min TLS 1.2)</strong> if any future cloud features are added.
           </p>
         </div>
-
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider mb-2 md:mb-3 text-black">No AI Training on Your Data</h3> {/* font-bold to semibold */}
+          <h3 className="text-sm font-semibold uppercase tracking-wider mb-2 md:mb-3 text-black">No AI Training on Your Data</h3>
           <p>
-            Your private debriefs are <strong className="text-black font-semibold">never used to train</strong> the Gemini AI model or any other AI. The analysis is performed on the fly and the result is sent back only to you.
+            Your private huddles are <strong className="text-black font-semibold">never used to train</strong> the Gemini AI model or any other AI. The analysis is performed on the fly and the result is sent back only to you.
           </p>
         </div>
-
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider mb-2 md:mb-3 text-black">No Sharing. No Selling. No Ads.</h3> {/* font-bold to semibold */}
+          <h3 className="text-sm font-semibold uppercase tracking-wider mb-2 md:mb-3 text-black">No Sharing. No Selling. No Ads.</h3>
           <p>
             Your data or insights are never shared with your team, league, agent, advertisers, or anyone else. <strong className="text-black font-semibold">We will never sell your data or show you ads.</strong>
           </p>
         </div>
-
         <div className="pt-4 md:pt-6">
-            <h3 className="text-sm font-semibold uppercase tracking-wider mb-2 md:mb-3 text-yellow-700">Important Disclaimer</h3> {/* font-bold to semibold */}
+            <h3 className="text-sm font-semibold uppercase tracking-wider mb-2 md:mb-3 text-yellow-700">Important Disclaimer</h3>
             <p>
                'The Huddle' provides AI-generated insights for reflection. It is <strong className="text-black font-semibold">not a substitute for professional therapy, medical treatment, or mental health care.</strong> The AI cannot detect or diagnose conditions.
             </p>
@@ -1175,7 +1157,6 @@ const PrivacyModal = ({ onClose }) => (
             </p>
         </div>
       </div>
-
       <p className="pt-6 md:pt-8 text-lg md:text-xl font-bold text-black">
         This is your secure space. What's said in here, stays in here.
       </p>
@@ -1195,36 +1176,41 @@ const PrivacyModal = ({ onClose }) => (
 
 /**
  * --- Main App Component ---
- * Updated global styles to use Open Sans font
+ * Renamed state variables and handlers
  */
 export default function App() {
   const [isAuth, setIsAuth] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const [page, setPage] = useState('debrief');
+  const [page, setPage] = useState('huddle'); // Default to huddle
   const [selectedPrompt, setSelectedPrompt] = useState(null);
   const [showPrivacy, setShowPrivacy] = useState(false);
-  const [debriefs, setDebriefs] = useState([]); // Initialize as empty array
+  const [huddles, setHuddles] = useState([]); // Renamed state
 
-  // Load/Save effects remain the same...
+  // Load Huddles from Local Storage
    useEffect(() => {
     try {
-      const storedDebriefs = localStorage.getItem('huddleDebriefs');
-      if (storedDebriefs) {
-          const parsedDebriefs = JSON.parse(storedDebriefs).map(d => ({ ...d, date: new Date(d.date) }));
-          if (Array.isArray(parsedDebriefs)) { setDebriefs(parsedDebriefs); }
-          else { localStorage.removeItem('huddleDebriefs'); }
+      const storedHuddles = localStorage.getItem('theHuddles'); // Changed key
+      if (storedHuddles) {
+          const parsedHuddles = JSON.parse(storedHuddles).map(d => ({ ...d, date: new Date(d.date) }));
+          if (Array.isArray(parsedHuddles)) { setHuddles(parsedHuddles); }
+          else { localStorage.removeItem('theHuddles'); }
       }
-    } catch (e) { console.error("LS Load Error:", e); localStorage.removeItem('huddleDebriefs'); }
+    } catch (e) { console.error("LS Load Error:", e); localStorage.removeItem('theHuddles'); }
   }, []);
 
+  // Save Huddles to Local Storage
    useEffect(() => {
     try {
-        if (debriefs.length > 0) {
-             const storableDebriefs = debriefs.map(d => ({ ...d, date: d.date.toISOString() }));
-            localStorage.setItem('huddleDebriefs', JSON.stringify(storableDebriefs));
-        } else { localStorage.removeItem('huddleDebriefs'); }
-    } catch (e) { console.error("LS Save Error:", e); alert("Warning: Could not save debriefs."); }
-  }, [debriefs]);
+        // Prevent saving invalid date objects
+         const validHuddles = huddles.filter(h => h.date instanceof Date && !isNaN(h.date));
+        if (validHuddles.length > 0) { // Check huddles state
+             const storableHuddles = validHuddles.map(d => ({ ...d, date: d.date.toISOString() })); // Use huddles state
+            localStorage.setItem('theHuddles', JSON.stringify(storableHuddles)); // Changed key
+        } else {
+             localStorage.removeItem('theHuddles'); // Changed key if array is empty or only contains invalid dates
+        }
+    } catch (e) { console.error("LS Save Error:", e); alert("Warning: Could not save huddles."); } // Updated message
+  }, [huddles]); // Depend on huddles state
 
 
   const handleUnlock = async () => {
@@ -1234,24 +1220,23 @@ export default function App() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach(track => track.stop());
       setIsAuth(true);
-      setShowPrivacy(true); // <-- Show privacy modal on successful unlock
+      setShowPrivacy(true); // Show privacy modal on successful unlock
     } catch (err) {
       console.error("Mic permission error:", err);
        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') { alert("Mic permission needed."); }
        else { alert("Mic access error."); }
       setIsAuthenticating(false);
     }
-     // No need to set isAuthenticating false on success here, handled implicitly
   };
 
-  const handleSaveDebrief = (newDebrief) => {
-    setDebriefs(prev => [newDebrief, ...prev]);
+  // Renamed handler
+  const handleSaveHuddle = (newHuddle) => {
+    setHuddles(prev => [newHuddle, ...prev]); // Use huddles state setter
     setPage('history');
   };
 
   if (!isAuth) {
     return (
-      // Use Open Sans font, white bg for lock screen
       <div className="min-h-screen bg-white font-sans">
         <GlobalStyles />
         <AuthScreen
@@ -1263,27 +1248,27 @@ export default function App() {
   }
 
   return (
-    // Use Open Sans font, light gray bg, black text
     <div className="min-h-screen bg-gray-100 text-black font-sans">
       <GlobalStyles />
       <main className="pb-20">
         <div className="container mx-auto max-w-4xl h-[calc(100vh-80px)] overflow-y-auto px-4 md:px-8 py-8">
-          {page === 'debrief' && (
-            <RecordingScreen
+          {/* Renamed page check and component */}
+          {page === 'huddle' && (
+            <HuddleScreen
               selectedPrompt={selectedPrompt}
               setSelectedPrompt={setSelectedPrompt}
-              onSave={handleSaveDebrief}
+              onSave={handleSaveHuddle} // Pass renamed handler
             />
           )}
           {page === 'history' && (
             <HistoryScreen
-              debriefs={debriefs}
+              huddles={huddles} // Pass renamed state
             />
           )}
           {page === 'prompts' && (
             <PromptsScreen
               setSelectedPrompt={setSelectedPrompt}
-              setPage={setPage}
+              setPage={setPage} // Pass setPage to navigate back
             />
           )}
         </div>
