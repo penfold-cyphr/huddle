@@ -473,7 +473,7 @@ const BottomNavBar = ({ activePage, setPage, onShowPrivacy }) => {
 
 /**
  * 3. RecordingScreen
- * Updated styles for monotone sans-serif
+ * Updated styles for monotone sans-serif and mobile friendliness
  */
 const RecordingScreen = ({ selectedPrompt, setSelectedPrompt, onSave }) => {
   const [view, setView] = useState('idle');
@@ -546,26 +546,33 @@ const RecordingScreen = ({ selectedPrompt, setSelectedPrompt, onSave }) => {
     switch (view) {
       case 'recording':
         return (
-          <div className="h-full flex flex-col items-center justify-between">
-            <div className="w-full flex-1 flex flex-col items-center justify-center pt-8">
-              <div className="flex items-center gap-3 text-red-600 mb-12">
+          // Use min-h-full for flex parent
+          <div className="min-h-full flex flex-col items-center justify-between">
+            {/* Top section (Timer and Status) */}
+             <div className="w-full text-center pt-8"> {/* Ensure top padding */}
+              <div className="flex items-center justify-center gap-3 text-red-600 mb-6 md:mb-12"> {/* Reduced margin */}
                 <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
-                <span className="text-sm font-semibold uppercase tracking-wider">{/* font-bold to semibold */}
+                <span className="text-sm font-semibold uppercase tracking-wider">
                   {isListening ? 'Listening...' : 'Recording Audio'}
                 </span>
               </div>
-              <h1 className="text-7xl md:text-9xl text-black font-bold tabular-nums leading-none mb-12 max-w-2xl mx-auto text-center"> {/* Adjusted size */}
+              {/* Responsive Timer */}
+              <h1 className="text-7xl md:text-9xl text-black font-bold tabular-nums leading-none mb-6 md:mb-12 max-w-2xl mx-auto">
                 {formatTime(elapsedTime)}
               </h1>
-              <div className="w-full max-w-2xl mx-auto max-h-48 md:max-h-64 overflow-y-auto bg-white p-4 md:p-6 border border-gray-200 rounded-lg shadow-sm"> {/* White bg, border, shadow */}
-                {transcript ? (
-                  <p className="text-base md:text-lg leading-relaxed">{transcript}</p>
-                ) : (
-                  <p className="text-base md:text-lg text-gray-400 italic">Start speaking to transcribe...</p>
-                )}
-              </div>
             </div>
-            <div className="pb-8">
+
+            {/* Middle Section (Transcript Preview) - Allow flex grow */}
+             <div className="w-full max-w-2xl mx-auto flex-grow overflow-y-auto bg-white p-4 md:p-6 border border-gray-200 rounded-lg shadow-sm mb-6 md:mb-8 max-h-[40vh] md:max-h-[30vh]"> {/* Use flex-grow, add max-height */}
+              {transcript ? (
+                <p className="text-base md:text-lg leading-relaxed">{transcript}</p>
+              ) : (
+                <p className="text-base md:text-lg text-gray-400 italic">Start speaking to transcribe...</p>
+              )}
+            </div>
+
+            {/* Bottom Section (Stop Button) */}
+            <div className="pb-8 flex-shrink-0"> {/* Ensure bottom padding */}
               <button
                 onClick={handleStop}
                 className="w-20 h-20 md:w-24 md:h-24 bg-black flex items-center justify-center hover:bg-gray-800 transition-colors rounded-full"
@@ -586,13 +593,15 @@ const RecordingScreen = ({ selectedPrompt, setSelectedPrompt, onSave }) => {
       case 'idle':
       default:
         return (
-          <div className="h-full flex flex-col">
-            <h2 className="text-4xl md:text-5xl font-bold text-black uppercase tracking-wider mb-16 pt-8">
+          // Use min-h-full for flex parent
+          <div className="min-h-full flex flex-col">
+            <h2 className="text-4xl md:text-5xl font-bold text-black uppercase tracking-wider pt-8 flex-shrink-0"> {/* Keep header at top */}
               Debrief
             </h2>
-            <div className="flex-1 flex flex-col items-center justify-center text-center">
+             {/* Use flex-grow for centering content */}
+            <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
               {selectedPrompt ? (
-                <div className="max-w-xl w-full mb-12 md:mb-16 bg-white p-6 rounded-lg border border-gray-200 shadow-sm"> {/* Card for prompt */}
+                <div className="max-w-xl w-full mb-8 md:mb-12 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                   <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-4">Guided Prompt</p>
                   <p className="text-xl md:text-2xl text-black font-medium leading-tight mb-8">
                     {selectedPrompt}
@@ -605,13 +614,13 @@ const RecordingScreen = ({ selectedPrompt, setSelectedPrompt, onSave }) => {
                   </button>
                 </div>
               ) : (
-                <p className="text-2xl md:text-3xl font-medium text-black mb-12 md:mb-16">
+                <p className="text-xl md:text-3xl font-medium text-black mb-8 md:mb-12"> {/* Adjusted size/margin */}
                   Ready to record your thoughts?
                 </p>
               )}
               <button
                 onClick={handleStart}
-                className="w-28 h-28 md:w-32 md:h-32 bg-blue-600 flex items-center justify-center hover:bg-blue-700 transition-colors group rounded-full shadow-lg" /* Added shadow */
+                className="w-28 h-28 md:w-32 md:h-32 bg-blue-600 flex items-center justify-center hover:bg-blue-700 transition-colors group rounded-full shadow-lg"
               >
                 <Mic size={48} md:size={56} className="text-white" strokeWidth={2} />
               </button>
@@ -623,6 +632,7 @@ const RecordingScreen = ({ selectedPrompt, setSelectedPrompt, onSave }) => {
   };
 
   return (
+    // Ensure parent has height for min-h-full to work
     <div className="h-full relative bg-transparent">
       {renderView()}
       {showAnalysisModal && (
@@ -640,7 +650,7 @@ const RecordingScreen = ({ selectedPrompt, setSelectedPrompt, onSave }) => {
 
 /**
  * 4. AnalysisModal
- * Updated styles for monotone sans-serif
+ * Updated styles for monotone sans-serif and mobile friendliness
  */
 const AnalysisModal = ({ audioUrl, duration, initialTranscript, onClose, onSubmit }) => {
   const [transcription, setTranscription] = useState(initialTranscript);
@@ -686,50 +696,50 @@ const AnalysisModal = ({ audioUrl, duration, initialTranscript, onClose, onSubmi
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-white font-sans text-black overflow-y-auto"> {/* Changed font */}
+    <div className="fixed inset-0 z-50 flex flex-col bg-white font-sans text-black overflow-y-auto">
       {/* Header */}
-      <div className="flex-shrink-0 p-6 md:p-8 border-b border-gray-200">
+      <div className="flex-shrink-0 p-4 md:p-8 border-b border-gray-200"> {/* Reduced mobile padding */}
         <div className="flex justify-between items-start">
-          <h2 className="text-3xl md:text-4xl font-bold uppercase tracking-wider">
+          <h2 className="text-2xl md:text-4xl font-bold uppercase tracking-wider"> {/* Reduced mobile size */}
             Review
           </h2>
           <button
             onClick={onClose}
-            className="p-2 -mr-2 md:p-2 hover:bg-gray-100 transition-colors rounded-full"
+            className="p-2 -mr-2 hover:bg-gray-100 transition-colors rounded-full"
           >
-            <X size={28} md:size={32} strokeWidth={2} />
+            <X size={24} md:size={32} strokeWidth={2} /> {/* Reduced mobile size */}
           </button>
         </div>
       </div>
 
        {/* Body */}
-      <div className="flex-grow p-6 md:p-8 flex flex-col">
-        <p className="text-base md:text-lg text-gray-600 mb-6 md:mb-8">
+      <div className="flex-grow p-4 md:p-8 flex flex-col"> {/* Reduced mobile padding */}
+        <p className="text-base text-gray-600 mb-4 md:mb-8"> {/* Adjusted size/margin */}
           Review your transcription. Edit below if needed.
         </p>
 
         {audioUrl && (
-          <div className="mb-6 md:mb-8">
-            <h3 className="text-xs font-bold uppercase tracking-wider mb-3 md:mb-4 text-gray-500">Audio Log</h3>
-             <div className="flex items-center gap-4 p-4 md:p-6 bg-gray-100 rounded"> {/* Simpler background */}
+          <div className="mb-4 md:mb-8"> {/* Adjusted margin */}
+            <h3 className="text-xs font-bold uppercase tracking-wider mb-2 md:mb-4 text-gray-500">Audio Log</h3> {/* Adjusted margin */}
+             <div className="flex items-center gap-3 md:gap-4 p-3 md:p-6 bg-gray-100 rounded"> {/* Reduced padding/gap */}
               <audio ref={audioRef} src={audioUrl} className="hidden" preload="metadata" />
               <button
                 onClick={togglePlay}
-                className="flex-shrink-0 w-12 h-12 md:w-16 md:h-16 flex items-center justify-center bg-black text-white rounded-full hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+                className="flex-shrink-0 w-10 h-10 md:w-16 md:h-16 flex items-center justify-center bg-black text-white rounded-full hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2" /* Adjusted size */
               >
-                {isPlaying ? <Pause size={20} md:size={24} fill="white" stroke="white" /> : <Play size={20} md:size={24} fill="white" stroke="white" />}
+                {isPlaying ? <Pause size={18} md:size={24} fill="white" stroke="white" /> : <Play size={18} md:size={24} fill="white" stroke="white" />} {/* Adjusted icon size */}
               </button>
               <div className="flex-grow">
-                <p className="font-semibold text-sm md:text-base">Recorded Debrief</p> {/* font-medium to semibold */}
-                <p className="text-xs md:text-sm text-gray-600 uppercase tracking-wider">{formatTime(duration)}</p>
+                <p className="font-semibold text-sm">Recorded Debrief</p> {/* Adjusted size */}
+                <p className="text-xs text-gray-600 uppercase tracking-wider">{formatTime(duration)}</p> {/* Adjusted size */}
               </div>
             </div>
           </div>
         )}
 
         <textarea
-          rows={12}
-          className="w-full p-4 md:p-6 bg-gray-50 border border-gray-300 rounded text-base md:text-lg leading-relaxed focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 resize-none flex-grow mb-6 md:mb-8"
+          rows={10} /* Reduced default rows */
+          className="w-full p-3 md:p-6 bg-gray-50 border border-gray-300 rounded text-base leading-relaxed focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 resize-none flex-grow mb-4 md:mb-8" /* Adjusted padding/margin */
           placeholder="Your transcription appears here..."
           value={transcription}
           onChange={(e) => setTranscription(e.target.value)}
@@ -741,16 +751,16 @@ const AnalysisModal = ({ audioUrl, duration, initialTranscript, onClose, onSubmi
           <button
             onClick={handleSubmit}
             disabled={isAnalyzing}
-            className="w-full bg-blue-600 text-white px-8 md:px-12 py-4 md:py-6 text-base md:text-lg font-bold uppercase tracking-wider hover:bg-blue-700 disabled:bg-gray-400 transition-colors flex items-center justify-center gap-3 rounded"
+            className="w-full bg-blue-600 text-white px-6 md:px-12 py-3 md:py-4 text-base font-bold uppercase tracking-wider hover:bg-blue-700 disabled:bg-gray-400 transition-colors flex items-center justify-center gap-3 rounded" /* Adjusted padding/text size */
           >
             {isAnalyzing ? (
               <>
-                <Loader2 size={20} md:size={24} className="animate-spin" />
+                <Loader2 size={20} className="animate-spin" /> {/* Adjusted size */}
                 Analyzing...
               </>
             ) : (
               <>
-                <Send size={20} md:size={24} />
+                <Send size={20} /> {/* Adjusted size */}
                 Analyze Debrief
               </>
             )}
