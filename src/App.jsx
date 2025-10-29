@@ -1234,12 +1234,14 @@ export default function App() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach(track => track.stop());
       setIsAuth(true);
+      setShowPrivacy(true); // <-- Show privacy modal on successful unlock
     } catch (err) {
       console.error("Mic permission error:", err);
        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') { alert("Mic permission needed."); }
        else { alert("Mic access error."); }
       setIsAuthenticating(false);
     }
+     // No need to set isAuthenticating false on success here, handled implicitly
   };
 
   const handleSaveDebrief = (newDebrief) => {
