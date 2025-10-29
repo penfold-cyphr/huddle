@@ -1,0 +1,38 @@
+/* Import Tailwind base styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Add any global base styles here if needed */
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Style for the audio player controls (optional, Tailwind usually suffices) */
+audio::-webkit-media-controls-panel {
+  background-color: #F3F4F6; /* light gray */
+  border-radius: 8px;
+}
+
+audio::-webkit-media-controls-play-button,
+audio::-webkit-media-controls-pause-button {
+ /* Add custom styles if needed */
+}
+
+/* Ensure container max-width works correctly */
+.container {
+    width: 100%;
+}
+@media (min-width: 640px) {
+    .container { max-width: 640px; }
+}
+@media (min-width: 768px) {
+    .container { max-width: 768px; }
+}
+@media (min-width: 1024px) {
+    /* max-w-4xl equivalent */
+    .container { max-width: 1024px; }
+}
+/* Add other breakpoints as needed */
