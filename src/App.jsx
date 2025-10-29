@@ -392,6 +392,7 @@ const GlobalStyles = () => {
 /**
  * 1. AuthScreen
  * Updated styles for monotone sans-serif
+ * REMOVED the !API_KEY check for Demo Mode
  */
 const AuthScreen = ({ onUnlock, isAuthenticating }) => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-white text-black p-8 font-sans"> {/* Changed font */}
@@ -406,21 +407,7 @@ const AuthScreen = ({ onUnlock, isAuthenticating }) => (
         Your Private Mindset Log
       </p>
 
-      {/* Demo Mode warning - Check if API_KEY *would* be defined IF it were here */}
-      {/* This simulates the check that would happen if API_KEY were potentially loaded */}
-      {typeof API_KEY === 'undefined' || !API_KEY ? ( // Check if API_KEY would be falsy
-        <div className="mt-8 p-4 bg-yellow-50 border border-yellow-300 text-left rounded">
-          <div className="flex gap-3 items-start">
-            <AlertCircle size={20} className="text-yellow-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-bold text-yellow-700 uppercase tracking-wider mb-1">Demo Mode</p>
-              <p className="text-sm text-yellow-800">
-                No API key detected. Using simulated AI responses.
-              </p>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {/* VERIFY: Removed Demo Mode Warning Block */}
 
        <div className="mt-12 text-gray-500 text-sm space-y-2">
            <p>✓ No Account Needed</p>
